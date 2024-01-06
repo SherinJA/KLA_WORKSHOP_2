@@ -83,10 +83,10 @@ def tsp_greedy(adj, nodes):
     return main_dict,sparse_dict
 
 
-def find_slots(tot_capacity,path_list,edge_weight_dict,nodes,node_qty):
+def find_slots(veh_tot_capacity_dict,path_list,edge_weight_dict,nodes,node_qty):
 
     start_node=nodes[0]
-  
+    veh_tot_capacity=list(veh_tot_capacity_dict.values())
     curr_node=start_node
     visited=[]
     tot_paths=[]
@@ -105,13 +105,16 @@ def find_slots(tot_capacity,path_list,edge_weight_dict,nodes,node_qty):
     
     visited.append(curr_node)
     tot_paths=[]
+    count=0
+    i=0
     while(len(visited)<21):
+        count+=1
         curr_node=start_node
         fill=0
         path=[]
         path.append("r0")
         print("\n\ncurr node:",curr_node)
-        while(fill<=tot_capacity):
+        while(fill<=veh_tot_capacity[i]):
             flag=0
             lis={}
             index=nodes.index(curr_node)
@@ -131,7 +134,7 @@ def find_slots(tot_capacity,path_list,edge_weight_dict,nodes,node_qty):
                     #print("went inside")
                     temp_curr_node=nodes[new_node]
                     fill+=node_qty[temp_curr_node]
-                    if(fill>tot_capacity):
+                    if(fill>veh_tot_capacity[i]):
                         flag=1
                         break
                     curr_node=nodes[new_node]
@@ -151,14 +154,16 @@ def find_slots(tot_capacity,path_list,edge_weight_dict,nodes,node_qty):
             print('len: ',len(visited))
 
             
-            if(fill>tot_capacity):
+            if(fill>veh_tot_capacity[i]):
                 break
             if(len(visited)==21):
                 break
 
         print("visited: ",visited)    
-        
+        if(count%2==0):
+            i+=1
         tot_paths.append(path)
+
     
     #print(tot_paths)
 
@@ -167,30 +172,45 @@ def find_slots(tot_capacity,path_list,edge_weight_dict,nodes,node_qty):
 
     print(tot_paths)
 
+    print(len(tot_paths))
 
-    sub_dict={}
-    main_dict={}
-    sub_dict["path1"]=tot_paths[0]
-    sub_dict["path2"]=tot_paths[1]
-    sub_dict["path3"]=tot_paths[2]
+    subdict={}
+    subdict1={}
+    subdict1["path1"]=tot_paths[0]
+    subdict1["path2"]=tot_paths[1]
+    subdict["v0"]=subdict1
 
-    main_dict["v0"]=sub_dict
-    print(main_dict)
+    subdict2={}
+    subdict2["path1"]=tot_paths[2]
+    subdict2["path2"]=tot_paths[3]
+    subdict["v1"]=subdict2
 
-    json_object = json.dumps(main_dict)
+    subdict3={}
+    subdict3["path1"]=tot_paths[4]
+    subdict3["path2"]=tot_paths[5]
+    subdict["v2"]=subdict3
 
-    with open("LEVEL_0\level1a_output.json", "w") as outfile:
+    subdict4={}
+    subdict4["path1"]=tot_paths[6]
+    subdict["v3"]=subdict4
+
+    print(subdict)
+
+
+
+
+
+
+
+    json_object = json.dumps(subdict)
+
+    with open("LEVEL_0\level2a_output.json", "w") as outfile:
         outfile.write(json_object)
 
-
-            
-            
-            
-
-    
+   
 
 
-f=open('LEVEL_0\level1a.json')
+f=open('LEVEL_0\level2a.json')
 
 data=json.load(f)
 
@@ -239,7 +259,9 @@ tsp_path_dict,edge_weight_dict=tsp_greedy(a,nodes)
 
 path_list=tsp_path_dict["v0"]["path"]
 
-tot_qty=data["vehicles"]["v0"]["capacity"]
+tot_qty={}
+for vehicle in data["vehicles"].keys():
+    tot_qty[vehicle]=data["vehicles"][vehicle]["capacity"]
 print(tot_qty)
 
 print(path_list)
