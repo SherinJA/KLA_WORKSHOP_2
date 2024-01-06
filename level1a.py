@@ -33,28 +33,28 @@ def tsp_greedy(adj, nodes):
     visited.append(unvisited[0])
     unvisited.remove(unvisited[0])
     
-    print(visited)
-    print(unvisited)
+    #print(visited)
+    #print(unvisited)
     curr_node=visited[0]
     for i in range(20):
         index=nodes.index(curr_node)
 
-        print(index)
+        #print(index)
         lis={}
         for key in keys:
             if(key[0]==index):
                 lis[key]=sparse_dict[key]
-        print(lis)
+        #print(lis)
 
         while True:
             minimum=min(lis.values())
-            print(minimum)
+            #print(minimum)
 
             for key in lis:
                 if(lis[key]==minimum):
                     min_key=key
             
-            print(min_key)
+            #print(min_key)
 
             new_node_index=min_key[1]
             if(nodes[new_node_index] not in visited):
@@ -65,25 +65,132 @@ def tsp_greedy(adj, nodes):
                 del(lis[min_key])
 
     visited.append(nodes[0])
-    print(visited)  
+    #print(visited)  
     main_dict={}
 
     sub_dict={}
 
     sub_dict["path"]=visited
-    print(sub_dict)  
+    #print(sub_dict)  
 
     main_dict["v0"]=sub_dict
-    print(main_dict)
+    #print(main_dict)
 
     """json_object = json.dumps(main_dict)
 
     with open("LEVEL_0\level1a.json", "w") as outfile:
         outfile.write(json_object)"""
+    return main_dict,sparse_dict
 
 
+def find_slots(tot_capacity,path_list,edge_weight_dict,nodes,node_qty):
 
-f=open('LEVEL_0\level0.json')
+    start_node=nodes[0]
+  
+    curr_node=start_node
+    visited=[]
+    tot_paths=[]
+    new_ew_dict={}
+    for key in edge_weight_dict.keys():
+        if(key[1]==0):
+            continue
+        else:
+            new_ew_dict[key]=edge_weight_dict[key]
+
+    keys=list(new_ew_dict.keys())
+
+    #print(new_ew_dict)
+    fill=0
+    curr_node=start_node
+    
+    visited.append(curr_node)
+    tot_paths=[]
+    while(len(visited)<21):
+        curr_node=start_node
+        fill=0
+        path=[]
+        path.append("r0")
+        print("\n\ncurr node:",curr_node)
+        while(fill<=tot_capacity):
+            flag=0
+            lis={}
+            index=nodes.index(curr_node)
+            for key in keys:
+                if(key[0]==index):
+                    lis[key]=new_ew_dict[key]
+            #print("list:",lis)
+            while(True):
+                #print("len:" , len(lis.values()))
+                min_val=min(lis.values())
+                #key_lis=list(lis.keys())
+                for key in lis:
+                    if(new_ew_dict[key]==min_val):
+                        min_key=key
+                new_node=min_key[1]
+                if(nodes[new_node] not  in visited):
+                    #print("went inside")
+                    temp_curr_node=nodes[new_node]
+                    fill+=node_qty[temp_curr_node]
+                    if(fill>tot_capacity):
+                        flag=1
+                        break
+                    curr_node=nodes[new_node]
+                    print("fill: ",fill)
+                    visited.append(curr_node)
+                    path.append(curr_node)
+                    break
+                else:
+                    #print("visited:",visited)
+                    #print("Already in visited: ",nodes[min_key[1]])
+                    del(lis[min_key])
+                    continue
+            if(flag==1):
+                continue
+            #print("min_node_out:",nodes[new_node])
+            print("\n\npath:", path)
+            print('len: ',len(visited))
+
+            
+            if(fill>tot_capacity):
+                break
+            if(len(visited)==21):
+                break
+
+        print("visited: ",visited)    
+        
+        tot_paths.append(path)
+    
+    #print(tot_paths)
+
+    for path in tot_paths:
+        path.append("r0")
+
+    print(tot_paths)
+
+
+    sub_dict={}
+    main_dict={}
+    sub_dict["path1"]=tot_paths[0]
+    sub_dict["path2"]=tot_paths[1]
+    sub_dict["paths3"]=tot_paths[2]
+
+    main_dict["v0"]=sub_dict
+    print(main_dict)
+
+    json_object = json.dumps(main_dict)
+
+    with open("LEVEL_0\level1a_output.json", "w") as outfile:
+        outfile.write(json_object)
+
+
+            
+            
+            
+
+    
+
+
+f=open('LEVEL_0\level1a.json')
 
 data=json.load(f)
 
@@ -128,6 +235,24 @@ plt.show()
 
 a=nx.adjacency_matrix(g, nodelist=None, dtype=None, weight='weight')
 
-tsp_greedy(a,nodes)
+tsp_path_dict,edge_weight_dict=tsp_greedy(a,nodes) 
+
+path_list=tsp_path_dict["v0"]["path"]
+
+tot_qty=data["vehicles"]["v0"]["capacity"]
+print(tot_qty)
+
+print(path_list)
+
+node_qty={}
+
+for i in range(1,len(nodes)):
+    node_qty[nodes[i]]=data["neighbourhoods"][nodes[i]]["order_quantity"]
+
+print(node_qty)
+
+
+find_slots(tot_qty,path_list,edge_weight_dict,nodes,node_qty)
+
 
 
